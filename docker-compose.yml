@@ -1,0 +1,59 @@
+version: '3.9'
+
+services:
+  app:
+    container_name: siacho-abt
+    build:
+      context: .
+    command: >
+     sh -c "python manage.py wait_for_db &&
+            python manage.py migrate &&
+            python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - 8000:8000
+    volumes:
+      - ./app:/app
+      - ./data/web:/vol/web
+ 
+    env_file:
+      - .env
+
+    environment:
+      - SECRET_KEY=devsecretkey
+      - DEBUG=1
+      - DB_HOST=db
+      - DB_NAME=siecho
+      - DB_USER=siecho
+      - DB_PASS=siecho
+    
+    networks:
+      - siecho_network
+
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:15-alpine
+    container_name: sieco-abt-db
+    restart: always
+    environment:
+      - POSTGRES_DB=siecho
+      - POSTGRES_USER=siecho
+      - POSTGRES_PASSWORD=siecho
+    volumes:
+      - pgdata:/var/lib/postgresql/data/
+    env_file:
+      - .env
+
+    ports:
+      - 5432:5432
+    networks:
+      - siecho_network
+  
+networks:
+  siecho_network:
+    driver: bridge
+
+volumes:
+  pgdata:
+
